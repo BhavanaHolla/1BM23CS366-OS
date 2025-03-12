@@ -1,0 +1,42 @@
+#include <stdio.h>
+
+int main() {
+ int at[]={0,3,2,1,5};
+ int bt[]={3,4,3,1,2};
+ int p[]={1,2,3,4,5};
+ int temp1,temp2,temp3;
+ int ct[5], tat[5], wt[5];
+
+  for (int i = 0; i < 5; i++) {
+        for (int j = i + 1; j < 5; j++) {
+            if (at[i] > at[j]) {
+                // Swapping Arrival Time (AT)
+                temp1 = at[j];
+                at[j] = at[i];
+                at[i] = temp1;
+
+                // Swapping Burst Time (BT)
+                temp2 = bt[j];
+                bt[j] = bt[i];
+                bt[i] = temp2;
+
+                // Swapping Process IDs (P)
+                temp3 = p[j];
+                p[j] = p[i];
+                p[i] = temp3;
+            }
+        }
+    }
+
+ ct[0]=bt[0];
+ for (int i=1;i<5;i++){
+     ct[i]=ct[i-1]+bt[i];
+ }
+ for(int i=0;i<5;i++){
+    tat[i]=ct[i]-at[i];
+    wt[i]=tat[i]-bt[i];
+}
+
+for(int i=0;i<5;i++){
+     printf("%d\t%d\t%d\t%d\t%d\t%d\n",p[i],at[i],bt[i],ct[i],tat[i],wt[i]);}
+}
