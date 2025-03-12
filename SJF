@@ -1,0 +1,62 @@
+#include<stdio.h>
+#include<stdlib.h>
+
+#define n 4
+
+int at[n], bt[n], ct[n], tat[n], wt[n], pt[n];
+float wtavg, tatavg;
+
+void main() {
+    wtavg = tatavg = 0.0;
+
+
+
+    for(int i = 0; i < n; i++) {
+        printf("Enter process number for Process %d: ", i + 1);
+        scanf("%d", &pt[i]);
+        printf("Enter arrival time for Process %d: ", i + 1);
+        scanf("%d", &at[i]);
+        printf("Enter burst time for Process %d: ", i + 1);
+        scanf("%d", &bt[i]);
+    }
+
+
+
+    for(int i = 0; i < n; i++) {
+        for(int j = i + 1; j < n; j++) {
+            if(at[i] > at[j]) {
+                int temp = at[i]; at[i] = at[j]; at[j] = temp;
+                temp = bt[i]; bt[i] = bt[j]; bt[j] = temp;
+                temp = pt[i]; pt[i] = pt[j]; pt[j] = temp;
+            }
+        }
+    }
+
+
+
+    ct[0] = at[0] + bt[0];
+    for(int i = 1; i < n; i++) {
+        ct[i] = (ct[i-1] > at[i]) ? ct[i-1] + bt[i] : at[i] + bt[i];
+    }
+
+    for(int i = 0; i < n; i++) {
+        tat[i] = ct[i] - at[i];
+        wt[i] = tat[i] - bt[i];
+        tatavg += tat[i];
+        wtavg += wt[i];
+    }
+
+
+    tatavg /= n;
+    wtavg /= n;
+
+
+    printf("\n%-10s%-10s%-10s%-10s%-10s\n", "Arrival", "Burst", "Completion", "Turnaround", "Waiting");
+    for(int i = 0; i < n; i++) {
+        printf("%-10d%-10d%-10d%-10d%-10d\n", at[i], bt[i], ct[i], tat[i], wt[i]);
+    }
+
+
+    printf("\nAverage Turnaround Time (TAT): %.2f\n", tatavg);
+    printf("Average Waiting Time (WT): %.2f\n", wtavg);
+}
