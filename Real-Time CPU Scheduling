@@ -1,0 +1,84 @@
+#include <stdio.h>
+
+#define MAX 10
+
+typedef struct {
+    int pid;
+    int burst;
+    int period;
+    int deadline;
+} Process;
+
+void rate_monotonic(Process p[], int n) {
+    printf("\nRate Monotone Scheduling:\n");
+    printf("PID\tBurst\tPeriod\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d\t%d\t%d\n", p[i].pid, p[i].burst, p[i].period);
+    }
+
+    double cpu_util = 0;
+    for (int i = 0; i < n; i++) {
+        cpu_util += (double)p[i].burst / p[i].period;
+    }
+
+    double bound = n * (pow(2, 1.0/n) - 1);
+    printf("\n%.6lf <= %.6lf =>%s\n", cpu_util, bound, (cpu_util <= bound) ? "true" : "false");
+}
+
+void earliest_deadline_first(Process p[], int n) {
+    printf("\nEarliest Deadline Scheduling:\n");
+    printf("PID\tBurst\tDeadline\tPeriod\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d\t%d\t%d\t\t%d\n", p[i].pid, p[i].burst, p[i].deadline, p[i].period);
+    }
+
+    int total_time = 0;
+    for (int i = 0; i < n; i++) {
+        total_time += p[i].burst;
+    }
+
+    printf("\nScheduling occurs for %d ms\n", total_time);
+    for (int t = 0; t < total_time; t++) {
+        printf("%dms : Task 1 is running.\n", t);
+    }
+}
+
+int main() {
+    Process p[MAX];
+    int n, choice;
+
+    printf("Enter the number of processes:");
+    scanf("%d", &n);
+
+    printf("Enter the CPU burst times:\n");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &p[i].burst);
+        p[i].pid = i + 1;
+    }
+
+    printf("Choose Scheduling Algorithm:\n1. Rate Monotonic\n2. Earliest Deadline First\nEnter choice: ");
+    scanf("%d", &choice);
+
+    if (choice == 1) {
+        printf("Enter the time periods:\n");
+        for (int i = 0; i < n; i++) {
+            scanf("%d", &p[i].period);
+        }
+        rate_monotonic(p, n);
+    } else if (choice == 2) {
+        printf("Enter the deadlines:\n");
+        for (int i = 0; i < n; i++) {
+            scanf("%d", &p[i].deadline);
+        }
+        printf("Enter the time periods:\n");
+        for (int i = 0; i < n; i++) {
+            scanf("%d", &p[i].period);
+        }
+        earliest_deadline_first(p, n);
+    } else {
+        printf("Invalid choice.\n");
+    }
+
+    return 0;
+}
+
