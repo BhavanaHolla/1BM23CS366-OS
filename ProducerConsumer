@@ -1,0 +1,87 @@
+#include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <unistd.h>
+
+#define BUFFER_SIZE 2
+
+int buffer[BUFFER_SIZE];
+int in = 0, out = 0;
+
+sem_t empty, full, mutex;
+
+void* producer(void* arg) {
+    int item, emptyValue;
+    while (1) {
+        printf("Enter a number to produce (or -1 to quit): ");
+        scanf("%d", &item);
+
+        if (item == -1) {
+            printf("Producer exiting.\n");
+            break;
+        }
+
+        sem_getvalue(&empty, &emptyValue);
+        if (emptyValue == 0) {
+            printf("Buffer full producer waiting...\n");
+        }
+
+        sem_wait(&empty); // Wait for empty slot
+        sem_wait(&mutex); // Enter critical section
+
+        buffer[in] = item;
+        in = (in + 1) % BUFFER_SIZE;
+        printf("Produced: %d\n", item);
+
+        sem_post(&mutex); // Leave critical section
+        sem_post(&full);  // Increment full count
+    }
+    return NULL;
+}
+
+void* consumer(void* arg) {
+    int item, fullValue;
+    while (1) {
+        sem_getvalue(&full, &fullValue);
+        if (fullValue == 0) {
+            printf("Buffer empty consumer waiting...\n");
+        }
+
+        sem_wait(&full);  // Wait for item
+        sem_wait(&mutex); // Enter critical section
+
+        item = buffer[out];
+        out = (out + 1) % BUFFER_SIZE;
+        printf("\n");
+
+        printf("Consumed: %d\n", item);
+
+        sem_post(&mutex); // Leave critical section
+        sem_post(&empty); // Increment empty count
+
+        sleep(3); // Simulate time to process
+    }
+}
+
+int main() {
+    pthread_t prod, cons;
+
+    sem_init(&empty, 0, BUFFER_SIZE); // BUFFER_SIZE empty slots
+    sem_init(&full, 0, 0);            // 0 full slots
+    sem_init(&mutex, 0, 1);           // Mutex binary semaphore
+
+    pthread_create(&prod, NULL, producer, NULL);
+    pthread_create(&cons, NULL, consumer, NULL);
+
+    pthread_join(prod, NULL);
+
+    // Stop the consumer after producer exits
+    pthread_cancel(cons);
+    pthread_join(cons, NULL);
+
+    sem_destroy(&empty);
+    sem_destroy(&full);
+    sem_destroy(&mutex);
+
+    return 0;
+}
