@@ -1,0 +1,74 @@
+#include <stdio.h>
+
+struct Process {
+    int pid, arrival, burst, remaining, completion, turnaround, waiting, response, started, priority;
+};
+
+void priorityPreemptive(struct Process p[], int n) {
+    int completed = 0, time = 0;
+    float totalTAT = 0, totalWT = 0, totalRT = 0;
+
+    while (completed < n) {
+        int idx = -1, highest = 9999;
+
+        // Select process with highest priority (lower number = higher priority)
+        for (int i = 0; i < n; i++) {
+            if (p[i].arrival <= time && p[i].remaining > 0) {
+                if (p[i].priority < highest || (p[i].priority == highest && p[i].arrival < p[idx].arrival)) {
+                    highest = p[i].priority;
+                    idx = i;
+                }
+            }
+        }
+
+        if (idx != -1) {
+            if (p[idx].started == 0) {
+                p[idx].response = time - p[idx].arrival;
+                p[idx].started = 1;
+            }
+            p[idx].remaining--;
+            time++;
+            if (p[idx].remaining == 0) {
+                p[idx].completion = time;
+                completed++;
+            }
+        } else {
+            time++;  // No process available, increase time
+        }
+    }
+
+    // Calculate Turnaround Time and Waiting Time
+    printf("\nPID\tAT\tBT\tPRI\tCT\tTAT\tWT\tRT");
+    for (int i = 0; i < n; i++) {
+        p[i].turnaround = p[i].completion - p[i].arrival;
+        p[i].waiting = p[i].turnaround - p[i].burst;
+        totalTAT += p[i].turnaround;
+        totalWT += p[i].waiting;
+        totalRT += p[i].response;
+        printf("\n%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d", 
+               p[i].pid, p[i].arrival, p[i].burst, p[i].priority, 
+               p[i].completion, p[i].turnaround, p[i].waiting, p[i].response);
+    }
+
+    // Display Averages
+    printf("\n\nAverage TAT = %.2f", totalTAT / n);
+    printf("\nAverage WT = %.2f", totalWT / n);
+    printf("\nAverage RT = %.2f\n", totalRT / n);
+}
+
+int main() {
+    int n;
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+    struct Process p[n];
+
+    printf("Enter PID, Arrival time, Burst time and Priority:\n");
+    for (int i = 0; i < n; i++) {
+        scanf("%d%d%d%d", &p[i].pid, &p[i].arrival, &p[i].burst, &p[i].priority);
+        p[i].remaining = p[i].burst;
+        p[i].started = 0;
+    }
+
+    priorityPreemptive(p, n);
+    return 0;
+}
